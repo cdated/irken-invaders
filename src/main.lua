@@ -15,7 +15,7 @@ function love.load()
 
     hero.shots = {}
 
-    descend_speed = .025
+    enemy_speed = .025
     enemy_count = 7
 
     spawn_enemies(150, enemy_count)
@@ -27,6 +27,10 @@ function love.load()
     time_difference = 0
 
     level = 0
+
+    -- change in horizontal and vertical for the ships
+    dx = 20   -- past max for dx, so the ships move down first
+    dy = 20
 end
 
 function spawn_enemies(altitude, num_enemies)
@@ -144,11 +148,24 @@ function love.update(dt)
 
     -- let the space invaders descend
     for i,v in ipairs(enemies) do
-        v.y = v.y + descend_speed + dt
-        if move_right then
-            v.x = v.x + descend_speed + dt
+        -- move down
+        if dx > 0 then
+            dx = dx - dt
+
+            v.y = v.y + enemy_speed + dt
+
+        -- move to the side
+        elseif dy > 0 then
+            dy = dy - dt
+
+            if move_right then
+                v.x = v.x + enemy_speed + dt
+            else
+                v.x = v.x - enemy_speed - dt
+            end
         else
-            v.x = v.x - descend_speed - dt
+            dx = 20
+            dy = 20
         end
 
         -- collision check with the ground
@@ -157,6 +174,11 @@ function love.update(dt)
             for ii,vv in ipairs(enemies) do
                 table.insert(remEnemy, ii)
             end
+        end
+
+        -- collision check with the hero
+        if CheckCollision(hero.x, hero.y, hero.width, hero.height, v.x, v.y, v.width, v.height) then
+            game_over = true
         end
     end
 
@@ -188,7 +210,7 @@ function love.update(dt)
 end
 
 function new_level()
-    descend_speed = descend_speed + .02
+    enemy_speed = enemy_speed + .02
     enemy_count = enemy_count + 7
     spawn_enemies(150, enemy_count)
     spawn_delay_time = .5
