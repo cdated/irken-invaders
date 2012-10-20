@@ -29,8 +29,8 @@ function love.load()
     level = 0
 
     -- change in horizontal and vertical for the ships
-    dx = 20   -- past max for dx, so the ships move down first
-    dy = 20
+    dt_x = 20
+    dt_y = 20
 end
 
 function spawn_enemies(altitude, num_enemies)
@@ -113,13 +113,14 @@ function love.update(dt)
     end
 
 
-    -- Handle screen bounds
+    -- Handle horizontal screen bounds
     if hero.x > 800 - hero.width then
         hero.x = 800 - hero.width
     elseif hero.x < 0 then
         hero.x = 0
     end
 
+    -- Handle vertical screen bounds
     if hero.y > 600 - hero.height then
         hero.y = 600 - hero.height
     elseif hero.y < 0 then
@@ -136,6 +137,7 @@ function love.update(dt)
         end
     end
 
+    -- make left and right shifts a function of time
     time_difference = time_difference + dt
     if time_difference > 6 then
         time_difference = 0
@@ -149,23 +151,25 @@ function love.update(dt)
     -- let the space invaders descend
     for i,v in ipairs(enemies) do
         -- move down
-        if dx > 0 then
-            dx = dx - dt
+        if dt_x > 0 then
+            dt_x = dt_x - dt
 
             v.y = v.y + enemy_speed + dt
 
         -- move to the side
-        elseif dy > 0 then
-            dy = dy - dt
+        elseif dt_y > 0 then
+            dt_y = dt_y - dt
 
+            -- move right or left accordingly
             if move_right then
                 v.x = v.x + enemy_speed + dt
             else
                 v.x = v.x - enemy_speed - dt
             end
         else
-            dx = 20
-            dy = 20
+            -- reset the time/shifts by dimension
+            dt_x = 20
+            dt_y = 20
         end
 
         -- collision check with the ground
